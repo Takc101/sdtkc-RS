@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卡密验证系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- 用户端页面 -->
+    <div id="userPage" class="container mx-auto px-4 py-10 max-w-md">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">输入提取密码获取卡密</h1>
+            <div class="mb-4">
+                <input type="text" id="userPwd" placeholder="请输入提取密码" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button id="getKmiBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition">获取卡密</button>
+            <div id="resultBox" class="mt-4 p-3 rounded-lg hidden"></div>
+        </div>
+    </div>
+
+    <!-- 管理员端页面 -->
+    <div id="adminPage" class="container mx-auto px-4 py-10 max-w-2xl hidden">
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">卡密管理后台</h1>
+            <div class="mb-4" id="adminLoginBox">
+                <input type="password" id="adminPwd" placeholder="请输入管理员密码" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="adminLoginBtn" class="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition">登录</button>
+            </div>
+            <div id="adminOperateBox" class="hidden">
+                <hr class="my-4">
+                <h3 class="text-xl font-semibold mb-3">添加新卡密</h3>
+                <div class="grid gap-3 mb-3">
+                    <input type="text" id="newExtractPwd" placeholder="用户需要输入的提取密码" class="w-full px-4 py-2 border rounded-lg">
+                    <input type="text" id="newKmiContent" placeholder="卡密内容（用户获取到的内容）" class="w-full px-4 py-2 border rounded-lg">
+                    <input type="date" id="newExpireTime" class="w-full px-4 py-2 border rounded-lg">
+                </div>
+                <button id="addKmiBtn" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition">添加卡密</button>
+
+                <div class="flex gap-2 mt-4">
+                    <button id="exportKmiBtn" class="w-1/2 bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg transition">导出卡密数据</button>
+                    <button id="adminLogoutBtn" class="w-1/2 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition">退出登录</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-semibold mb-3">已有卡密列表</h3>
+            <div id="kmiList" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <script>
+        // 配置：修改这里的管理员密码
+        const ADMIN_PASSWORD = "SDtkc520";
+        // 从localStorage存取卡密数据
+        const KMI_STORAGE_KEY = "SDmain_data";
+
+        // 路由判断
+        if(location.hash === "#admin"){
+            document.getElementById('adminPage').classList.remove('hidden');
+            document.getElementById('userPage').classList.add('hidden');
+        }else{
+            document.getElementById('userPage').classList.remove('hidden');
+            document.getElementById('adminPage').classList.add('hidden');
+        }
+
+        // ========== 用户端逻辑 ==========
+        document.getElementById('getKmiBtn').addEventListener('click', () => {
+            const inputPwd = document.getElementById('userPwd').value.trim();
+            const kmiList = JSON.parse(localStorage.getItem(KMI_STORAGE_KEY) || '[]');
+            const targetKmi = kmiList.find(item => item.extractPwd === inputPwd);
+
+            const resultBox = document.getElementById('resultBox');
+            resultBox.classList.remove('hidden');
+            if(!targetKmi){
+                resultBox.classList.add('bg-red-100', 'text-red-700');
+                resultBox.textContent = "密码错误，找不到对应卡密";
+                return;
+            }
+            if(new Date(targetKmi.expireTime) < new Date()){
+                resultBox.classList.add('bg-red-100', 'text-red-700');
+                resultBox.textContent = "该卡密已过期";
+                return;
+            }
+            resultBox.classList.add('bg-green-100', 'text-green-700');
+            resultBox.innerHTML = `验证成功！你的卡密是：<br><span class="font-mono font-bold">${targetKmi.content}</span>`;
+            navigator.clipboard.writeText(targetKmi.content);
+            resultBox.innerHTML += "<br>已自动复制到剪贴板";
+        });
+
+        // ========== 管理员端逻辑 ==========
+        function renderKmiList(){
+            const container = document.getElementById('kmiList');
+            const kmiList = JSON.parse(localStorage.getItem(KMI_STORAGE_KEY) || '[]');
+            if(kmiList.length === 0){
+                container.innerHTML = "<p class='text-gray-500 text-center'>暂无卡密</p>";
+                return;
+            }
+            container.innerHTML = kmiList.map((item, index) => `
+                <div class="border rounded-lg p-3 flex justify-between items-center">
+                    <div>
+                        <p>提取密码：<span class="font-semibold">${item.extractPwd}</span></p>
+                        <p>过期时间：${item.expireTime}</p>
+                        <p>卡密：${item.content}</p>
+                    </div>
+                    <button data-index="${index}" class="deleteBtn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition">删除</button>
+                </div>
+            `).join('');
+            document.querySelectorAll('.deleteBtn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = Number(e.target.dataset.index);
+                    const kmiList = JSON.parse(localStorage.getItem(KMI_STORAGE_KEY) || '[]');
+                    kmiList.splice(idx, 1);
+                    localStorage.setItem(KMI_STORAGE_KEY, JSON.stringify(kmiList));
+                    renderKmiList();
+                });
+            });
+        }
+
+        document.getElementById('adminLoginBtn').addEventListener('click', () => {
+            const pwd = document.getElementById('adminPwd').value.trim();
+            if(pwd === ADMIN_PASSWORD){
+                document.getElementById('adminLoginBox').classList.add('hidden');
+                document.getElementById('adminOperateBox').classList.remove('hidden');
+                renderKmiList();
+            }else{
+                alert('管理员密码错误');
+            }
+        });
+
+        document.getElementById('addKmiBtn').addEventListener('click', () => {
+            const extractPwd = document.getElementById('newExtractPwd').value.trim();
+            const content = document.getElementById('newKmiContent').value.trim();
+            const expireTime = document.getElementById('newExpireTime').value;
+            if(!extractPwd || !content || !expireTime){
+                alert('请填写完整信息');
+                return;
+            }
+            const kmiList = JSON.parse(localStorage.getItem(KMI_STORAGE_KEY) || '[]');
+            kmiList.push({extractPwd, content, expireTime});
+            localStorage.setItem(KMI_STORAGE_KEY, JSON.stringify(kmiList));
+            alert('添加成功');
+            renderKmiList();
+            // 清空输入
+            document.getElementById('newExtractPwd').value = '';
+            document.getElementById('newKmiContent').value = '';
+            document.getElementById('newExpireTime').value = '';
+        });
+
+        document.getElementById('exportKmiBtn').addEventListener('click', () => {
+            const data = localStorage.getItem(KMI_STORAGE_KEY);
+            const blob = new Blob([data], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'kmi_data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('adminLogoutBtn').addEventListener('click', () => {
+            document.getElementById('adminLoginBox').classList.remove('hidden');
+            document.getElementById('adminOperateBox').classList.add('hidden');
+            document.getElementById('adminPwd').value = '';
+        });
+
+        // 初始渲染
+        window.addEventListener('load', () => {
+            if(location.hash === "#admin" && localStorage.getItem('adminLogged') === '1'){
+                document.getElementById('adminLoginBox').classList.add('hidden');
+                document.getElementById('adminOperateBox').classList.remove('hidden');
+                renderKmiList();
+            }
+        });
+    </script>
+</body>
+</html>
