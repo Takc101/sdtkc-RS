@@ -3,117 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>sdtkc 网络验证</title>
+    <title>sdtkc网络验证</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {margin: 0;padding: 0;box-sizing: border-box;font-family: system-ui, -apple-system, sans-serif;}
-        :root {--bg: #f5f5f5;--card-bg: #ffffff;--text: #121212;--border: #eee;--primary: #2196F3;}
-        @media (prefers-color-scheme: dark) {
-            :root {--bg: #121212;--card-bg: #1e1e1e;--text: #f5f5f5;--border: #333;}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:"微软雅黑",sans-serif;background:#f1f5f9;display:flex;}
+        /* 侧边栏 */
+        .sidebar{width:220px;background:#1e293b;height:100vh;position:fixed;color:#fff;}
+        .sidebar .menu-item{
+            padding:16px 25px;cursor:pointer;
+            transition:all 0.2s;
         }
-        body {min-height: 100vh;background: var(--bg);color: var(--text);}
-        .sidebar {position: fixed;top: 0;left: -250px;width: 250px;height: 100vh;background: var(--card-bg);box-shadow: 2px 0 12px rgba(0,0,0,0.1);transition: left 0.3s;padding: 2rem 1rem;z-index: 100;}
-        .sidebar.open {left: 0;}
-        .sidebar h3 {margin-bottom: 2rem;text-align: center;}
-        .sidebar a {display: block;padding: 1rem;margin: 0.5rem 0;border-radius: 8px;text-decoration: none;color: var(--text);border: 1px solid var(--border);transition: all 0.2s;}
-        .sidebar a:hover {background: var(--primary);color: white;}
-        .menu-btn {position: fixed;top: 1rem;left: 1rem;width: 40px;height: 40px;border-radius: 8px;background: var(--primary);color: white;display: flex;align-items: center;justify-content: center;font-size: 1.5rem;cursor: pointer;z-index: 99;}
-        .main {padding: 5rem 1rem 2rem;display: flex;flex-direction: column;align-items: center;}
-        .logo-img {width: 150px;height: 150px;border-radius: 50%;overflow: hidden;border: 3px solid var(--primary);margin-bottom: 2rem;}
-        .logo-img img {width: 100%;height: 100%;object-fit: cover;}
-        .inject-card {width: 90%;max-width: 500px;padding: 2rem;border-radius: 12px;background: var(--card-bg);box-shadow: 0 2px 12px rgba(0,0,0,0.1);border: 1px solid var(--border);}
-        .file-row {display: flex;align-items: center;gap: 1rem;margin-bottom: 1.5rem;}
-        .file-icon {font-size: 2rem;}
-        #fileInput {display: none;}
-        .select-btn {margin-left: auto;padding: 0.8rem 1.5rem;border-radius: 8px;background: var(--primary);color: white;cursor: pointer;}
-        #fileName {font-size: 0.9rem;}
-        .inject-btn {width: 100%;padding: 1rem;border: none;border-radius: 8px;background: var(--primary);color: white;font-size: 1rem;cursor: pointer;}
-        .inject-btn:disabled {background: #999;cursor: not-allowed;}
+        .sidebar .menu-item:hover,.active{background:#334155;}
+        .main{margin-left:220px;width:100%;padding:30px;min-height:100vh;}
+        .logo-box{text-align:center;margin-bottom:35px;}
+        .logo-box img{width:120px;height:120px;border-radius:50%;object-fit:cover;}
+        .upload-card{
+            width:90%;max-width:550px;margin:0 auto;
+            background:#fff;border-radius:12px;padding:25px;
+            display:flex;align-items:center;gap:20px;
+            border:1px solid #e2e8f0;
+        }
+        .file-icon{font-size:48px;color:#4299e1;}
+        .confirm-btn{
+            margin-top:25px;width:90%;max-width:550px;display:block;margin-inline:auto;
+            height:50px;background:#10b981;color:#fff;border:none;
+            border-radius:8px;font-size:17px;cursor:pointer;
+        }
+        .download-page{display:none;}
     </style>
 </head>
 <body>
-    <div class="menu-btn" onclick="toggleMenu()">☰</div>
-    <div class="sidebar" id="sidebar">
-        <h3>sdtkc 网络验证</h3>
-        <a href="./inject.html">卡密对接</a>
-        <!-- 这里改成你自己的项目下载链接 -->
-        <a href="你的项目下载地址">sd 项目文件下载</a>
+<div class="sidebar">
+    <div style="padding:20px 15px;font-size:20px;border-bottom:1px solid #334155;">sdtkc验证</div>
+    <div class="menu-item active" onclick="switchPage('inject')">
+        <i class="fa fa-plug"></i> 卡密对接
     </div>
-
-    <div class="main">
-        <div class="logo-img">
-            <img src="./logo.png" alt="logo">
+    <div class="menu-item" onclick="switchPage('download')">
+        <i class="fa fa-download"></i> sd项目文件下载
+    </div>
+</div>
+<div class="main">
+    <!-- 卡密对接主界面 -->
+    <div id="inject-page">
+        <div class="logo-box">
+            <img src="sdtkc_logo.png" alt="sdtkc图标">
         </div>
-        <div class="inject-card">
-            <div class="file-row">
-                <span class="file-icon">📄</span>
-                <span id="fileName">未选择文件</span>
-                <label for="fileInput" class="select-btn">选择SH文件</label>
-                <input type="file" id="fileInput" accept=".sh">
+        <div class="upload-card">
+            <div class="file-icon"><i class="fa-solid fa-file-code"></i></div>
+            <div>
+                <p style="margin-bottom:12px;">选择本地sh脚本文件注入验证逻辑</p>
+                <input type="file" id="shFile" accept=".sh">
             </div>
-            <button class="inject-btn" id="injectBtn" onclick="injectCode()" disabled>确认注入</button>
         </div>
+        <button class="confirm-btn" onclick="injectSh()">确认注入验证逻辑</button>
     </div>
-
-    <script>
-        // ========== 改成你自己的卡密系统地址，就是你的Pages地址 ==========
-        const VERIFY_URL = "https://Takc101.github.io/sdtkc-RS/index.html";
-        // ==============================================================
-
-        let selectedFile = null;
-        const fileInput = document.getElementById('fileInput');
-        const injectBtn = document.getElementById('injectBtn');
-        const fileName = document.getElementById('fileName');
-
-        fileInput.addEventListener('change', (e) => {
-            selectedFile = e.target.files[0];
-            if(selectedFile) {
-                fileName.innerText = selectedFile.name;
-                injectBtn.disabled = false;
-            } else {
-                fileName.innerText = "未选择文件";
-                injectBtn.disabled = true;
-            }
-        });
-
-        function toggleMenu() {
-            document.getElementById('sidebar').classList.toggle('open');
-        }
-
-        function injectCode() {
-            if(!selectedFile) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const originalContent = e.target.result;
-                // 注入的验证代码
-                const injectCode = `#!/system/bin/sh
-# sdtkc网络验证 自动注入
-VERIFY_PWD=$(getprop ro.serialno)
-RESPONSE=$(curl -s --connect-timeout 10 "${VERIFY_URL}?act=verify&pwd=$VERIFY_PWD")
-CODE=$(echo $RESPONSE | grep -o '"code":[0-9]*' | cut -d: -f2)
-if [ $CODE -ne 0 ]; then
-    echo "验证失败：卡密错误或已过期"
+    <!-- sd项目文件下载页 -->
+    <div id="download-page" class="download-page">
+        <h3>SD项目文件下载</h3>
+        <p style="margin-top:15px;">你可以自行在这里添加对应的项目文件下载链接</p>
+    </div>
+</div>
+<script>
+// 侧边栏页面切换
+function switchPage(type){
+    document.querySelectorAll(".menu-item").forEach(i=>i.classList.remove("active"));
+    if(type === 'inject'){
+        document.getElementById('inject-page').style.display='block';
+        document.getElementById('download-page').style.display='none';
+    }else{
+        document.getElementById('inject-page').style.display='none';
+        document.getElementById('download-page').style.display='block';
+    }
+}
+// 对接卡密系统的注入逻辑
+async function injectSh(){
+    const fileInput = document.getElementById("shFile");
+    if(!fileInput.files[0]) return alert("请先选择sh文件");
+    const originCode = await fileInput.files[0].text();
+    // 自动注入适配整套卡密系统的验证逻辑
+    const injectCode = `#!/bin/bash
+# 自动注入sdtkc卡密验证系统
+GH_USER="Takc101"
+GH_REPO="sdtkc-RS"
+GH_CARD_PATH="card.json"
+echo "===== sdtkc网络验证 ====="
+read -p "请输入卡密：" input_card
+all_cards=$(curl -s https://api.github.com/repos/$GH_USER/$GH_REPO/contents/$GH_CARD_PATH | jq -r '.content' | base64 -d)
+check_res=$(echo $all_cards | jq -e --arg k "$input_card" '.[] | select(.key==$k and (.expire | fromdateiso8601) > now )')
+if [ $? -eq 0 ];then
+    echo " 卡密验证通过"
+    ${originCode.slice(2)}
+else
+    echo " 卡密无效或已过期"
     exit 1
 fi
-
-# ========== 原脚本内容 ==========
-`;
-                const finalContent = injectCode + originalContent;
-                downloadFile(finalContent, selectedFile.name);
-            };
-            reader.readAsText(selectedFile);
-        }
-
-        function downloadFile(content, filename) {
-            const blob = new Blob([content], {type: 'text/plain'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-    </script>
+`
+    // 导出注入完成的文件
+    const blob = new Blob([injectCode],{type:"text/plain"});
+    const a = document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download = "injected_" + fileInput.files[0].name;
+    a.click();
+}
+</script>
 </body>
 </html>
