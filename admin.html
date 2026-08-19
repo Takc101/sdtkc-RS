@@ -1,260 +1,329 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>卡密管理后台</title>
-    <style>
-        * {box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif;}
-        body {max-width: 650px; margin: 20px auto; padding: 0 16px;}
-        h2 {text-align: center; margin-bottom: 24px; color: #222;}
-        .block {margin-bottom: 20px; padding: 16px; border-radius: 8px; background: #f8f9fa;}
-        label {display: block; margin-bottom: 8px; font-weight: 500; color: #333;}
-        input, textarea {width: 100%; padding: 10px 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px;}
-        textarea {resize: vertical; min-height: 80px;}
-        button {width: 100%; padding: 11px; border: none; border-radius: 6px; background: #2563eb; color: #fff; font-size: 15px; cursor: pointer;}
-        button:hover {background: #1d4ed8;}
-        .btn-red {background: #dc2626;}
-        .btn-red:hover {background: #b91c1c;}
-        pre {margin-top: 12px; padding: 12px; background: #fff; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; word-break: break-all;}
-        .hidden {display: none;}
-        .admin-item {display: flex; gap: 10px; align-items: center; padding: 8px; background: #fff; border-radius: 6px; margin-bottom: 8px;}
-        .admin-item span {flex: 1;}
-        .admin-item button {width: auto; padding: 6px 12px; font-size: 13px;}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>卡密管理后台 全功能版</title>
+<style>
+* {box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif;}
+body {max-width: 750px; margin: 20px auto; padding: 0 16px;}
+h2 {text-align: center; margin-bottom: 24px; color: #222;}
+.block {margin-bottom: 20px; padding: 16px; border-radius: 8px; background: #f8f9fa;}
+label {display: block; margin-bottom: 8px; font-weight: 500; color: #333;}
+input, textarea, select {width: 100%; padding: 10px 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px;}
+textarea {resize: vertical; min-height: 80px;}
+button {width: 100%; padding: 11px; border: none; border-radius: 6px; background: #2563eb; color: #fff; font-size: 15px; cursor: pointer; transition: background 0.2s;}
+button:hover {background: #1d4ed8;}
+.btn-red {background: #dc2626;}
+.btn-red:hover {background: #b91c1c;}
+.btn-green {background: #16a34a;}
+.btn-green:hover {background: #15803d;}
+.btn-sm {width: auto; padding: 8px 12px; font-size: 13px;}
+pre {margin-top: 12px; padding: 12px; background: #fff; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; word-break: break-all;}
+.hidden {display: none;}
+.admin-item {display: flex; gap: 10px; align-items: center; padding: 8px; background: #fff; border-radius: 6px; margin-bottom: 8px;}
+.admin-item span {flex: 1;}
+.flex-row {display: flex; gap: 10px; margin-top: 12px;}
+.checkbox-wrap {display: flex; align-items: center; gap: 6px; margin-bottom: 12px;}
+.checkbox-wrap input {width: auto; margin: 0;}
+.card-item {display: flex; align-items: center; gap: 8px; padding: 10px; background: #fff; border-radius: 6px; margin-bottom: 8px; flex-wrap: wrap;}
+.card-info {flex: 1; font-size: 14px; word-break: break-all;}
+</style>
 </head>
 <body>
-    <!-- 管理员登录界面 -->
-    <div id="login_page">
-        <h2>管理员登录</h2>
-        <div class="block">
-            <label>管理员账号：</label>
-            <input type="text" id="admin_username" placeholder="输入管理员账号">
-            <label>管理员密码：</label>
-            <input type="password" id="admin_pwd" placeholder="输入管理员密码">
-            <button onclick="adminLogin()">登录后台</button>
-        </div>
-    </div>
+<div id="login_page">
+<h2>卡密管理后台 管理员登录</h2>
+<div class="block">
+<label>管理员账号：</label>
+<input type="text" id="admin_username" placeholder="请输入你的管理员账号">
+<label>管理员密码：</label>
+<input type="password" id="admin_pwd" placeholder="请输入你的管理员密码">
+<button onclick="adminLogin()">登录后台</button>
+</div>
+</div>
 
-    <!-- 卡密管理主界面，登录成功后才会显示 -->
-    <div id="main_page" class="hidden">
-        <h2>GitHub卡密管理后台</h2>
+<div id="main_page" class="hidden">
+<h2>GitHub全功能卡密管理后台</h2>
 
-        <!-- 多管理员管理模块 -->
-        <div class="block">
-            <h3 style="margin-bottom:12px">管理员账号管理</h3>
-            <label>新增管理员账号：</label>
-            <input type="text" id="new_admin_user" placeholder="输入新管理员账号">
-            <label>新增管理员密码：</label>
-            <input type="password" id="new_admin_pwd" placeholder="输入新管理员密码">
-            <button onclick="addNewAdmin()">添加新管理员</button>
-            <div style="margin-top:16px">
-                <label>当前所有管理员：</label>
-                <div id="admin_list"></div>
-            </div>
-        </div>
+<div class="block">
+<h3 style="margin-bottom:12px">管理员账号管理</h3>
+<label>新增管理员账号：</label>
+<input type="text" id="new_admin_user" placeholder="输入新管理员账号名称">
+<label>新增管理员密码：</label>
+<input type="password" id="new_admin_pwd" placeholder="输入新管理员登录密码">
+<button onclick="addNewAdmin()">添加新管理员</button>
+<div style="margin-top:16px">
+<label>当前已添加的所有管理员：</label>
+<div id="admin_list"></div>
+</div>
+</div>
 
-        <!-- 新增令牌自动识别模块 -->
-        <div class="block">
-            <h3 style="margin-bottom:12px">GitHub令牌自动识别</h3>
-            <label>直接粘贴完整的GitHub令牌文本，系统会自动拆分填充到下方三个输入框：</label>
-            <textarea id="full_token_text" placeholder="把你复制的完整GitHub令牌直接粘贴到这里，点击自动拆分按钮即可"></textarea>
-            <button onclick="autoSplitToken()">自动拆分填充令牌</button>
+<div class="block">
+<h3 style="margin-bottom:12px">GitHub令牌管理</h3>
+<label>方式1：直接粘贴完整GitHub令牌，自动拆分填充：</label>
+<textarea id="full_token_text" placeholder="把你复制的完整GitHub令牌直接粘贴到这里，点击拆分按钮即可"></textarea>
+<button onclick="autoSplitToken()">自动拆分填充令牌</button>
 
-            <label style="margin-top:16px">拆分后的令牌预览（也可以手动修改）：</label>
-            <input type="text" id="token_part1" placeholder="令牌第一段">
-            <input type="text" id="token_part2" placeholder="令牌第二段">
-            <input type="text" id="token_part3" placeholder="令牌第三段">
-            <button onclick="loadCards()">加载现有卡密</button>
-        </div>
+<label style="margin-top:16px">拆分后的分段令牌（可手动修改）：</label>
+<input type="text" id="token_part1" placeholder="令牌第一段">
+<input type="text" id="token_part2" placeholder="令牌第二段">
+<input type="text" id="token_part3" placeholder="令牌第三段">
 
-        <div class="block">
-            <label>新增卡密：</label>
-            <input type="text" id="new_card" placeholder="输入要添加的卡密">
-            <button onclick="addCard()">添加卡密</button>
-        </div>
-        <div class="block">
-            <label>当前卡密列表：</label>
-            <pre id="card_output"></pre>
-            <button onclick="logout()" class="btn-red" style="margin-top:12px;">退出登录</button>
-        </div>
-    </div>
+<div class="checkbox-wrap">
+<input type="checkbox" id="save_token_check" checked>
+<label for="save_token_check" style="margin:0">记住令牌，下次打开后台自动填充</label>
+</div>
+
+<div class="flex-row">
+<button onclick="loadCards()" class="flex">刷新所有卡密</button>
+<button onclick="clearToken()" class="btn-sm btn-red flex">清除本地令牌</button>
+</div>
+</div>
+
+<div class="block">
+<h3 style="margin-bottom:12px">新增卡密</h3>
+<div style="display:flex; gap:8px; align-items:center;">
+<div style="flex:1">
+<label>卡密编号：</label>
+<input type="text" id="new_card_key" placeholder="输入卡密">
+</div>
+<button class="btn-green btn-sm" onclick="gen16RandCode()">生成16位随机卡密</button>
+</div>
+<label>卡密密码：</label>
+<input type="text" id="new_card_pwd" placeholder="输入卡密对应的密码">
+<label>设置卡密有效期：</label>
+<select id="card_valid_type">
+<option value="1">天卡（1天有效期）</option>
+<option value="7">周卡（7天有效期）</option>
+<option value="30">月卡（30天有效期）</option>
+<option value="90">季卡（90天有效期）</option>
+<option value="365">年卡（365天有效期）</option>
+<option value="99999">永久卡（永久有效）</option>
+</select>
+<button onclick="addCard()">提交新增卡密</button>
+</div>
+
+<div class="block">
+<h3 style="margin-bottom:12px">所有卡密列表</h3>
+<div id="card_list_show"></div>
+<button onclick="logout()" class="btn-red" style="margin-top:16px;">退出登录</button>
+</div>
+</div>
 
 <script>
-// ========== 初始默认管理员账号，第一次打开后可以在后台界面自行添加新账号 ==========
-let ADMIN_LIST = [
-    {username: "admin", password: "123456"}
-];
-// 自动适配你的仓库信息，无需手动修改
+let ADMIN_LIST = [ {username: "admin", password: "123456"} ];
 const GITHUB_USER = "Takc101";
 const REPO_NAME = "sdtkc-RS";
 const FILE_PATH = "card.json";
+window.currentSha = "";
+window.currentCards = [];
 
-// 页面加载时自动读取本地存储的多管理员列表
 window.onload = function(){
-    const localAdmins = localStorage.getItem('multi_admin_list');
-    if(localAdmins) ADMIN_LIST = JSON.parse(localAdmins);
-    // 自动校验登录状态
-    if(localStorage.getItem('admin_logined') === 'true'){
-        document.getElementById('login_page').classList.add('hidden');
-        document.getElementById('main_page').classList.remove('hidden');
-        renderAdminList();
-    }
+const localAdmins = localStorage.getItem('multi_admin_list');
+if(localAdmins) ADMIN_LIST = JSON.parse(localAdmins);
+const savedToken = localStorage.getItem('saved_full_token');
+if(savedToken) {
+document.getElementById('full_token_text').value = savedToken;
+autoSplitToken();
+}
+if(localStorage.getItem('admin_logined') === 'true'){
+document.getElementById('login_page').classList.add('hidden');
+document.getElementById('main_page').classList.remove('hidden');
+renderAdminList();
+}
 }
 
-// 令牌自动拆分识别逻辑
+// ========== 一键生成16位随机拼音+数字的专用函数 ==========
+function gen16RandCode(){
+const pinyinPool = "abcdefghijklmnopqrstuvwxyz";
+const numPool = "0123456789";
+let res = "";
+for(let i=0; i<8; i++) res += pinyinPool[Math.floor(Math.random()*26)];
+for(let i=0; i<8; i++) res += numPool[Math.floor(Math.random()*10)];
+document.getElementById('new_card_key').value = res;
+}
+
+// ========== 令牌拆分和保存功能 ==========
 function autoSplitToken(){
-    const fullToken = document.getElementById('full_token_text').value.trim().replace(/\s/g, '');
-    if(!fullToken) {alert('请先粘贴完整的GitHub令牌文本'); return;}
-    // 自动按长度三等分拆分，适配GitHub标准40位左右的令牌格式
-    const partLen = Math.floor(fullToken.length / 3);
-    document.getElementById('token_part1').value = fullToken.slice(0, partLen);
-    document.getElementById('token_part2').value = fullToken.slice(partLen, partLen * 2);
-    document.getElementById('token_part3').value = fullToken.slice(partLen * 2);
-    alert('令牌已自动拆分填充完成，你可以核对后直接使用');
+const fullToken = document.getElementById('full_token_text').value.trim().replace(/\s/g, '');
+if(!fullToken) {alert('请先粘贴完整的GitHub令牌文本'); return;}
+const partLen = Math.ceil(fullToken.length / 3);
+document.getElementById('token_part1').value = fullToken.slice(0, partLen);
+document.getElementById('token_part2').value = fullToken.slice(partLen, partLen * 2);
+document.getElementById('token_part3').value = fullToken.slice(partLen * 2);
+if(document.getElementById('save_token_check').checked) localStorage.setItem('saved_full_token', fullToken);
+alert('令牌已自动拆分填充完成');
+}
+function clearToken(){
+localStorage.removeItem('saved_full_token');
+document.getElementById('full_token_text').value = '';
+document.getElementById('token_part1').value = '';
+document.getElementById('token_part2').value = '';
+document.getElementById('token_part3').value = '';
+alert('本地令牌已清除');
 }
 
-// 渲染管理员列表
+// ========== 管理员全功能 ==========
 function renderAdminList(){
-    const container = document.getElementById('admin_list');
-    container.innerHTML = '';
-    ADMIN_LIST.forEach((item, index)=>{
-        const div = document.createElement('div');
-        div.className = 'admin-item';
-        div.innerHTML = `
-            <span>账号：${item.username}</span>
-            <button class="btn-red" onclick="deleteAdmin(${index})">删除</button>
-        `;
-        container.appendChild(div);
-    })
+const container = document.getElementById('admin_list');
+container.innerHTML = '';
+ADMIN_LIST.forEach((item, index)=>{
+const div = document.createElement('div');
+div.className = 'admin-item';
+div.innerHTML = `<span>账号：${item.username}</span><button class="btn-red btn-sm" onclick="deleteAdmin(${index})">删除</button>`;
+container.appendChild(div);
+})
 }
-
-// 添加新管理员
 function addNewAdmin(){
-    const newUser = document.getElementById('new_admin_user').value.trim();
-    const newPwd = document.getElementById('new_admin_pwd').value.trim();
-    if(!newUser || !newPwd) {alert('账号和密码都不能为空'); return;}
-    // 校验账号重复
-    const isExist = ADMIN_LIST.some(admin => admin.username === newUser);
-    if(isExist) {alert('该管理员账号已经存在'); return;}
-    ADMIN_LIST.push({username: newUser, password: newPwd});
-    localStorage.setItem('multi_admin_list', JSON.stringify(ADMIN_LIST));
-    alert('新管理员添加成功');
-    renderAdminList();
-    document.getElementById('new_admin_user').value = '';
-    document.getElementById('new_admin_pwd').value = '';
+const newUser = document.getElementById('new_admin_user').value.trim();
+const newPwd = document.getElementById('new_admin_pwd').value.trim();
+if(!newUser || !newPwd) {alert('账号和密码都不能为空'); return;}
+if(ADMIN_LIST.some(admin => admin.username === newUser)) {alert('该管理员账号已存在'); return;}
+ADMIN_LIST.push({username: newUser, password: newPwd});
+localStorage.setItem('multi_admin_list', JSON.stringify(ADMIN_LIST));
+alert('新管理员添加成功'); renderAdminList();
+document.getElementById('new_admin_user').value = ''; document.getElementById('new_admin_pwd').value = '';
 }
-
-// 删除指定管理员
 function deleteAdmin(index){
-    if(ADMIN_LIST.length <= 1) {alert('至少需要保留1个管理员账号，无法全部删除'); return;}
-    if(confirm(`确认要删除管理员【${ADMIN_LIST[index].username}】吗？`)){
-        ADMIN_LIST.splice(index, 1);
-        localStorage.setItem('multi_admin_list', JSON.stringify(ADMIN_LIST));
-        alert('管理员已删除');
-        renderAdminList();
-    }
+if(ADMIN_LIST.length <= 1) {alert('至少保留1个管理员，无法全部删除'); return;}
+if(confirm(`确认删除管理员【${ADMIN_LIST[index].username}】？`)){
+ADMIN_LIST.splice(index, 1);
+localStorage.setItem('multi_admin_list', JSON.stringify(ADMIN_LIST));
+alert('管理员已删除'); renderAdminList();
 }
-
-// 管理员登录校验
+}
 function adminLogin() {
-    const inputUser = document.getElementById('admin_username').value.trim();
-    const inputPwd = document.getElementById('admin_pwd').value.trim();
-    const loginSuccess = ADMIN_LIST.some(admin => admin.username === inputUser && admin.password === inputPwd);
-    if(loginSuccess){
-        localStorage.setItem('admin_logined', 'true');
-        document.getElementById('login_page').classList.add('hidden');
-        document.getElementById('main_page').classList.remove('hidden');
-        renderAdminList();
-    }else{
-        alert('账号或密码错误，无法进入后台');
-    }
+const inputUser = document.getElementById('admin_username').value.trim();
+const inputPwd = document.getElementById('admin_pwd').value.trim();
+if(ADMIN_LIST.some(admin => admin.username === inputUser && admin.password === inputPwd)){
+localStorage.setItem('admin_logined', 'true');
+document.getElementById('login_page').classList.add('hidden');
+document.getElementById('main_page').classList.remove('hidden');
+renderAdminList();
+}else{ alert('账号或密码错误'); }
 }
-
-// 退出登录
 function logout() {
-    localStorage.removeItem('admin_logined');
-    document.getElementById('main_page').classList.add('hidden');
-    document.getElementById('login_page').classList.remove('hidden');
-    document.getElementById('admin_username').value = '';
-    document.getElementById('admin_pwd').value = '';
+localStorage.removeItem('admin_logined');
+document.getElementById('main_page').classList.add('hidden');
+document.getElementById('login_page').classList.remove('hidden');
 }
 
-// 自动拼接三段令牌
 function getFullToken() {
-    return document.getElementById('token_part1').value.trim() 
-         + document.getElementById('token_part2').value.trim() 
-         + document.getElementById('token_part3').value.trim();
+return document.getElementById('token_part1').value.trim() + document.getElementById('token_part2').value.trim() + document.getElementById('token_part3').value.trim();
 }
 
-// 加载卡密列表
+// ========== 刷新卡密列表+可视化渲染 ==========
 async function loadCards() {
-    const token = getFullToken();
-    const output = document.getElementById('card_output');
-    output.textContent = "正在加载...";
-    try {
-        const res = await fetch(
-            `https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_PATH}`,
-            {headers: {Authorization: `token ${token}`, 'User-Agent': 'Kami-Admin'}}
-        );
-        if (!res.ok) throw new Error(`加载失败：请检查令牌是否正确、是否勾选repo权限`);
-        const data = await res.json();
-        // 标准base64解码，不会出现转码错误
-        const cardList = JSON.parse(atob(data.content));
-        output.textContent = JSON.stringify(cardList, null, 2);
-        window.currentSha = data.sha;
-        window.currentCards = cardList;
-    } catch (err) {
-        output.textContent = `错误：${err.message}`;
-    }
+const token = getFullToken();
+const outputBox = document.getElementById('card_list_show');
+outputBox.innerHTML = "<div class='card-item'>正在加载卡密列表，请稍候...</div>";
+try {
+const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_PATH}`,
+{headers: {Authorization: `token ${token}`, 'User-Agent': 'Kami-Admin'}});
+if (!res.ok) throw new Error(`加载失败：请检查令牌权限是否正确`);
+const data = await res.json();
+window.currentSha = data.sha;
+window.currentCards = JSON.parse(atob(data.content));
+renderCardList();
+} catch (err) {
+outputBox.innerHTML = `<div class='card-item'>错误：${err.message}</div>`;
+}
+}
+// 渲染可视化卡密列表，带删除按钮
+function renderCardList(){
+const container = document.getElementById('card_list_show');
+container.innerHTML = '';
+if(window.currentCards.length === 0) {
+container.innerHTML = '<div class="card-item">当前没有任何卡密记录</div>';
+return;
+}
+window.currentCards.forEach((item, index)=>{
+const div = document.createElement('div');
+div.className = 'card-item';
+div.innerHTML = `
+<div class="card-info">
+<b>卡密：${item.cardKey}</b> | 密码：${item.cardPwd} <br>
+过期时间：${item.expireTime}
+</div>
+<button class="btn-red btn-sm" onclick="delOneCard(${index})">删除</button>
+`;
+container.appendChild(div);
+})
 }
 
-// 修复后的添加卡密逻辑，彻底杜绝URL编码乱码
+// ========== 删除单条卡密功能 ==========
+async function delOneCard(delIndex){
+const token = getFullToken();
+const delTarget = window.currentCards[delIndex].cardKey;
+if(!confirm(`确认要删除卡密【${delTarget}】吗？删除后无法恢复`)) return;
+try {
+window.currentCards.splice(delIndex, 1);
+const contentStr = JSON.stringify(window.currentCards, null, 2);
+const encodedContent = btoa(unescape(encodeURIComponent(contentStr)));
+const updateRes = await fetch(
+`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_PATH}`,
+{
+method: 'PUT',
+headers: {Authorization: `token ${token}`, 'Content-Type': 'application/json'},
+body: JSON.stringify({message: `删除卡密${delTarget}`, content: encodedContent, sha: window.currentSha})
+}
+);
+if (!updateRes.ok) throw new Error('删除失败，令牌权限不足');
+alert('卡密删除成功');
+loadCards();
+} catch (err) { alert(`删除错误：${err.message}`); }
+}
+
+// ========== 新增带密码+有效期的卡密 ==========
 async function addCard() {
-    const token = getFullToken();
-    const newCard = document.getElementById('new_card').value.trim();
-    const output = document.getElementById('card_output');
-    if (!newCard) {alert('请输入要添加的卡密'); return;}
+const token = getFullToken();
+const cardKey = document.getElementById('new_card_key').value.trim();
+const cardPwd = document.getElementById('new_card_pwd').value.trim();
+const validDays = parseInt(document.getElementById('card_valid_type').value);
+if (!cardKey || !cardPwd) {alert('卡密和密码都不能为空'); return;}
 
-    try {
-        // 先拉取最新的文件版本
-        let res = await fetch(
-            `https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_PATH}`,
-            {headers: {Authorization: `token ${token}`, 'User-Agent': 'Kami-Admin'}}
-        );
-        let oldData = await res.json();
-        let cards = [];
-        if (res.ok) {
-            cards = JSON.parse(atob(oldData.content));
-        }
-        if (cards.includes(newCard)) {
-            alert('该卡密已存在，无需重复添加');
-            return;
-        }
-        cards.push(newCard);
-        // 核心修复：标准JSON转base64，不会生成带%的乱码内容
-        const contentStr = JSON.stringify(cards, null, 2);
-        const encodedContent = btoa(unescape(encodeURIComponent(contentStr)));
+// 自动计算过期时间
+const nowTime = new Date();
+nowTime.setDate(nowTime.getDate() + validDays);
+const expireStr = nowTime.toLocaleString('zh-CN');
 
-        // 提交更新
-        const updateRes = await fetch(
-            `https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_PATH}`,
-            {
-                method: 'PUT',
-                headers: {Authorization: `token ${token}`, 'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    message: "后台新增卡密",
-                    content: encodedContent,
-                    sha: oldData.sha
-                })
-            }
-        );
-        if (!updateRes.ok) throw new Error(`更新失败：${(await updateRes.json()).message}`);
-        alert('卡密添加成功！');
-        loadCards();
-    } catch (err) {
-        output.textContent = `添加错误：${err.message}`;
-    }
+try {
+let res = await fetch(
+`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_PATH}`,
+{headers: {Authorization: `token ${token}`, 'User-Agent': 'Kami-Admin'}}
+);
+let oldData = await res.json();
+let cards = [];
+let newSha = "";
+if (res.ok) {
+cards = JSON.parse(atob(oldData.content));
+newSha = oldData.sha;
+}
+if (cards.some(card => card.cardKey === cardKey)) {
+alert('该卡密已存在，不可重复添加');
+return;
+}
+// 组装标准卡密数据结构，完美适配你之前写的PHP验证接口
+cards.push({cardKey:cardKey, cardPwd:cardPwd, expireTime: expireStr});
+const contentStr = JSON.stringify(cards, null, 2);
+const encodedContent = btoa(unescape(encodeURIComponent(contentStr)));
+
+const updateRes = await fetch(
+`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/${FILE_PATH}`,
+{
+method: 'PUT',
+headers: {Authorization: `token ${token}`, 'Content-Type': 'application/json'},
+body: JSON.stringify({message: "新增带有效期的卡密", content: encodedContent, sha: newSha?newSha:''})
+}
+);
+if (!updateRes.ok) throw new Error(`添加失败：${(await updateRes.json()).message}`);
+alert('卡密添加成功！');
+document.getElementById('new_card_key').value = '';
+document.getElementById('new_card_pwd').value = '';
+loadCards();
+} catch (err) {
+alert(`添加错误：${err.message}`);
+}
 }
 </script>
 </body>
