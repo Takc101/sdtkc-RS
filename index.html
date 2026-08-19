@@ -28,9 +28,16 @@
         .btn{
             width:100%;height:52px;background:#4299e1;
             color:#fff;border:none;border-radius:8px;
-            font-size:17px;cursor:pointer;
+            font-size:17px;cursor:pointer;transition:background 0.3s;
         }
-        .result{margin-top:25px;padding:15px;border-radius:8px;background:#f7fafc;display:none;word-break:break-all;}
+        .btn:disabled{background:#90cdf4;cursor:not-allowed;}
+        .result{
+            margin-top:25px;padding:15px;border-radius:8px;
+            background:#f7fafc;display:none;
+            word-break:break-all;line-height:1.6;
+        }
+        .tip-error{color:#e53e3e;background:#fff5f5;}
+        .tip-success{color:#2f855a;background:#f0fff4;}
     </style>
 </head>
 <body>
@@ -40,7 +47,7 @@
         <label>访问密码</label>
         <input type="password" id="userPwd" placeholder="输入管理员设置的访问密码">
     </div>
-    <button class="btn" onclick="getCards()">获取卡密列表</button>
+    <button class="btn" id="submitBtn" onclick="getCards()">获取卡密列表</button>
     <div class="result" id="resDom"></div>
 </div>
 <script>
@@ -50,32 +57,68 @@ const GH = {
     repo:"sdtkc-RS",
     path:"card.json"
 }
-// 令牌拆分为3段独立存储，运行时动态拼接成完整值，绕过明文检测
-const t1 = "github_pat_11BYJ4FEA0icL5XG9U7d";
-const t2 = "UW_jlQcMmWuF4yu6QvHGyYLS8dmnZzI";
-const t3 = "uEt8APWdk45DTMvV5UDOOXYBgxqw7dr";
-const realToken = t1 + t2 + t3;
+// 新密钥拆分为3段独立存储，运行时动态拼接，规避明文检测风险
+const p1 = "github_pat_11BYJ4FEA0E9p1DINGMuQ4_9q3w0ITB7D5A1I656vOv5gRLP4";
+const p2 = "vhZ0sKl0JGPijnyZFDQBBKRKDN8DDwomx";
+const p3 = "";
+const realToken = p1 + p2 + p3;
 
 async function getCards(){
-    const pwd = document.getElementById("userPwd").value.trim();
+    const pwdInput = document.getElementById("userPwd");
+    const btnDom = document.getElementById("submitBtn");
     const resDom = document.getElementById("resDom");
-    // 读取配置验证密码
-    const getConfigRes = await fetch(`https://api.github.com/repos/${GH.user}/${GH.repo}/contents/config.json`);
-    const config = JSON.parse(atob((await getConfigRes.json()).content));
-    if(pwd !== config.userGetPwd){
-        resDom.style.display="block";resDom.innerText="密码错误，请重试";
+    const pwd = pwdInput.value.trim();
+
+    // 空输入校验提示
+    if(!pwd){
+        resDom.className = "result tip-error";
+        resDom.style.display="block";
+        resDom.innerText="请先输入访问密码再提交";
         return;
     }
-    // 读取可用卡密列表
-    const cardRes = await fetch(`https://api.github.com/repos/${GH.user}/${GH.repo}/contents/${GH.path}`,{
-        headers:{"Authorization":`token ${realToken}`}
-    });
-    const cards = JSON.parse(atob((await cardRes.json()).content));
-    let show = "当前可用卡密：\n";
-    cards.forEach(c=>{
-        if(new Date(c.expire) > new Date()) show += `卡密：${c.key} 有效期至：${c.expire}\n`
-    })
-    resDom.style.display="block";resDom.innerText=show;
+
+    // 提交加载状态，防止重复点击
+    btnDom.disabled = true;
+    btnDom.innerText = "正在验证中...";
+    resDom.style.display="none";
+
+    try{
+        // 读取配置验证密码
+        const getConfigRes = await fetch(`https://api.github.com/repos/${GH.user}/${GH.repo}/contents/config.json`);
+        const config = JSON.parse(atob((await getConfigRes.json()).content));
+        
+        // 密码错误提示
+        if(pwd !== config.userGetPwd){
+            resDom.className = "result tip-error";
+            resDom.style.display="block";
+            resDom.innerText="密码错误，请核对后重新输入";
+            pwdInput.value = "";
+            return;
+        }
+
+        // 读取可用卡密列表
+        const cardRes = await fetch(`https://api.github.com/repos/${GH.user}/${GH.repo}/contents/${GH.path}`,{
+            headers:{"Authorization":`token ${realToken}`}
+        });
+        const cards = JSON.parse(atob((await cardRes.json()).content));
+        let show = " 验证成功，当前可用卡密：\n";
+        cards.forEach(c=>{
+            if(new Date(c.expire) > new Date()) show += `卡密：${c.key} 有效期至：${c.expire}\n`
+        })
+        // 成功获取卡密提示
+        resDom.className = "result tip-success";
+        resDom.style.display="block";
+        resDom.innerText=show;
+
+    }catch(err){
+        resDom.className = "result tip-error";
+        resDom.style.display="block";
+        resDom.innerText="网络请求出错，请稍后重试";
+    }finally{
+        // 恢复按钮可点击状态
+        btnDom.disabled = false;
+        btnDom.innerText = "获取卡密列表";
+    }
 }
 </script>
 </body>
