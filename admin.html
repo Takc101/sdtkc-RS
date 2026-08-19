@@ -325,6 +325,84 @@ loadCards();
 alert(`添加错误：${err.message}`);
 }
 }
+<!-- 新增配置面板，放在原有卡密管理区域的最下方 -->
+<div style="margin-top: 35px; padding: 20px; background: #121212; border-radius: 10px; border: 1px solid #333;">
+    <h3 style="color:#fff; margin-bottom: 18px; font-size: 18px;">全局参数配置</h3>
+    <div style="margin-bottom: 14px;">
+        <label style="color:#ccc; display:block; margin-bottom:8px; font-size:15px;">前端访问密码</label>
+        <input type="text" id="frontPwd" style="width:100%; height:42px; background:#1a1a1a; border:1px solid #444; color:#fff; border-radius:6px; padding:0 12px;" placeholder="设置用户获取卡密的访问密码">
+    </div>
+    <div style="margin-bottom: 14px;">
+        <label style="color:#ccc; display:block; margin-bottom:8px; font-size:15px;">全局GitHub令牌</label>
+        <input type="text" id="globalToken" style="width:100%; height:42px; background:#1a1a1a; border:1px solid #444; color:#fff; border-radius:6px; padding:0 12px;" placeholder="填写你的GitHub个人访问令牌">
+    </div>
+    <div style="margin-bottom: 14px;">
+        <label style="color:#ccc; display:block; margin-bottom:8px; font-size:15px;">卡密文件路径</label>
+        <input type="text" id="cardFilePath" style="width:100%; height:42px; background:#1a1a1a; border:1px solid #444; color:#fff; border-radius:6px; padding:0 12px;" value="cards.txt">
+    </div>
+    <button id="saveConfigBtn" style="width:100%; height:48px; background:#1a4b7a; border:none; color:#fff; border-radius:6px; font-size:16px; margin-top:8px;">保存配置到仓库</button>
+    <div id="configTip" style="margin-top:12px; color:#4ade80; font-size:14px;"></div>
+</div>
+
+<script>
+// 完全复用你后台已有的仓库配置，不需要额外修改
+const CONFIG_FILE = "config.js";
+// 页面加载自动读取已保存的配置回填
+window.addEventListener('load', async () => {
+    try {
+        const res = await fetch(`https://api.github.com/repos/takc101/sdtkc-RS/contents/${CONFIG_FILE}`, {
+            headers: { "Authorization": `token ${你后台现有的管理员令牌}` }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const configText = atob(data.content);
+            const pwdMatch = configText.match(/FRONT_PWD = "(.*?)"/);
+            const tokenMatch = configText.match(/GLOBAL_TOKEN = "(.*?)"/);
+            const pathMatch = configText.match(/CARD_FILE_PATH = "(.*?)"/);
+            if(pwdMatch) document.getElementById('frontPwd').value = pwdMatch[1];
+            if(tokenMatch) document.getElementById('globalToken').value = tokenMatch[1];
+            if(pathMatch) document.getElementById('cardFilePath').value = pathMatch[1];
+        }
+    } catch (e) {
+        document.getElementById('configTip').innerText = "未检测到已有配置，可直接新建";
+    }
+});
+// 保存配置逻辑
+document.getElementById('saveConfigBtn').addEventListener('click', async () => {
+    const newConfig = `// 自动生成的全局配置文件
+const FRONT_PWD = "${document.getElementById('frontPwd').value}";
+const GLOBAL_TOKEN = "${document.getElementById('globalToken').value}";
+const CARD_FILE_PATH = "${document.getElementById('cardFilePath').value}";
+`;
+    let fileSha = "";
+    try {
+        const checkRes = await fetch(`https://api.github.com/repos/takc101/sdtkc-RS/contents/${CONFIG_FILE}`, {
+            headers: { "Authorization": `token ${你后台现有的管理员令牌}` }
+        });
+        if(checkRes.ok) {
+            const checkData = await checkRes.json();
+            fileSha = checkData.sha;
+        }
+    } catch(e) {}
+    const uploadRes = await fetch(`https://api.github.com/repos/takc101/sdtkc-RS/contents/${CONFIG_FILE}`, {
+        method: "PUT",
+        headers: {
+            "Authorization": `token ${你后台现有的管理员令牌}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            message: "更新全局配置",
+            content: btoa(unescape(encodeURIComponent(newConfig))),
+            sha: fileSha
+        })
+    });
+    if(uploadRes.ok) {
+        document.getElementById('configTip').innerText = "配置保存成功，前端自动读取新参数";
+    } else {
+        document.getElementById('configTip').innerText = "保存失败，请检查令牌权限";
+    }
+})
+</script>
 </script>
 </body>
 </html>
